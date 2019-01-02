@@ -3,6 +3,7 @@ from enum import IntEnum
 from peewee import Model, IntegerField, PostgresqlDatabase, TextField, CompositeKey, CharField
 from urllib3.util import parse_url
 
+from app.utils import choices_from_enum
 from config import *
 
 
@@ -25,12 +26,8 @@ database = get_database()
 EPlatform = IntEnum('EPlatform', 'tg vk')
 
 
-def get_choices_from_enum(enum):
-    return [(item[1].value, item[0]) for item in enum.__members__.items()]
-
-
 class Session(Model):
-    platform = IntegerField(default=0, choices=get_choices_from_enum(EPlatform), help_text='Platform ID')
+    platform = IntegerField(default=0, choices=choices_from_enum(EPlatform), help_text='Platform ID')
     id = CharField(help_text='Platform ID')
     state = IntegerField(default=0, help_text='Current bot state for user')
     state_param = TextField(default='', help_text='Param for state')
