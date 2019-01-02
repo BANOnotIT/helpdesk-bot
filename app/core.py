@@ -1,19 +1,52 @@
 # from flask import current_app
 
 from enum import IntEnum
+from os import getcwd, path
 
+from modules.msg_parser import get_messages
 from modules.state_machine import State, Machine
-from .api import Message
+from .api import Message, EMessageType
 
-EState = IntEnum('EState', 'initial base text meta command tags')
+EState = IntEnum('EState', 'initial base meta team')
+
+MESSAGES = get_messages(open(path.join(getcwd(), 'messages.msg')).read())
 
 
 class InitialState(State):
     def next_state(self, msg):
         return BaseState()
 
+    def leaving(self, msg: Message):
+        msg.reply(MESSAGES.get('greet'))
+
 
 class BaseState(State):
+    def next_state(self, msg: Message):
+        if msg.kind is EMessageType.command:
+            if msg.text.strip() == '/end':
+                return MetaState()
+            elif msg.text.strip() == '/cancel':
+                return BaseState()
+
+        return None
+
+    def entered(self, msg: Message):
+        msg.session.text = ''
+        msg.session.set_state(EState.base)
+        msg.session.save()
+
+        msg.reply(MESSAGES.get('start_typing'))
+
+    def stay(self, msg: Message):
+        msg.session.text += msg.text
+        msg.session.save()
+
+
+class MetaState(State):
+    def entered(self, msg):
+        msg.session.set_state(EState.meta)
+        msg.session.save()
+
     def next_state(self, msg):
         return None
 
@@ -21,6 +54,8 @@ class BaseState(State):
 class BotStateMachine(Machine):
     map_states = {
         EState.initial: InitialState(),
+        EState.base: BaseState(),
+        EState.meta: MetaState(),
     }
 
     def get_initial_state(self, msg):
