@@ -59,7 +59,7 @@ class BotStateMachine(Machine):
     }
 
     def get_initial_state(self, msg):
-        state = EState(msg.user.state)
+        state = EState(msg.session.state)
 
         if state in self.map_states:
             return self.map_states.get(state)
