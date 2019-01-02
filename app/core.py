@@ -39,7 +39,7 @@ class BaseState(State):
         msg.reply(MESSAGES.get('start_typing'))
 
     def stay(self, msg: Message):
-        msg.session.text += msg.text
+        msg.session.text += '\n' + msg.text
         msg.session.save()
 
 
@@ -62,7 +62,7 @@ class MetaState(State):
 
     def leaving(self, msg: Message):
         msg.reply(MESSAGES.get('meta_sending'))
-        msg.reply(msg.session.text.strip)
+        msg.reply(msg.session.text.strip())
 
     def stay(self, msg: Message):
         msg.reply(MESSAGES.get('confirm'))
