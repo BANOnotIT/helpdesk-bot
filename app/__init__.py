@@ -11,15 +11,13 @@ flask_app = Flask(__name__, static_folder='../static', template_folder='../templ
 tg_api = TgApi(tg_token)
 vk_api = VkApi(vk_token)
 
-
 # Инициализируем все таблички в бд
-# create_tables()
+create_tables()
 
 
 @flask_app.before_request
 def before_request():
-    pass
-    # database.connect(reuse_if_open=True)
+    database.connect(reuse_if_open=True)
 
 
 @flask_app.teardown_appcontext
