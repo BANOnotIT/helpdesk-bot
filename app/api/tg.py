@@ -1,8 +1,8 @@
 from flask import current_app
 from requests import post
 
-from ..db import User
-from .base import Api, EMessageType, Message, EPlatform
+from .base import Api, EMessageType, Message
+from ..db import Session, EPlatform
 
 
 class TgApi(Api):
@@ -32,15 +32,15 @@ class TgApi(Api):
             return EMessageType.unknown
 
     def get_message(self, message):
-        user, new = User.get_or_create(tg=int(message['from']['id']))
+        session, new = Session.get_or_create(id=int(message['from']['id']), platform=EPlatform.tg)
 
         if new:
-            current_app.logger.info('Created new tg user: {}'.format(repr(user)))
+            current_app.logger.info('Created new session: {}'.format(repr(session)))
 
         chat = int(message['chat']['id'])
         kind = self.get_message_kind(message)
 
-        message = TgMessage(message.get('text', ''), user, kind, chat)
+        message = TgMessage(message.get('text', ''), session, kind, chat)
         message.api = self
 
         return message
@@ -57,7 +57,6 @@ class TgApi(Api):
 
 
 class TgMessage(Message):
-    platform = EPlatform.tg
     api = None
 
     def reply(self, message: str):

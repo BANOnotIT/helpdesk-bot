@@ -1,4 +1,6 @@
-from enum import Enum
+from enum import IntEnum
+
+from app.db import Session
 
 
 class Api:
@@ -9,30 +11,18 @@ class Api:
         raise NotImplementedError()
 
 
-class EMessageType(Enum):
-    unknown = 0
-    text = 1
-    command = 2
-    joined = 3
-    leaved = 4
-
-
-class EPlatform(Enum):
-    unknown = 0
-    tg = 1
-    vk = 2
+EMessageType = IntEnum('EMessageType', 'unknown text command joined leaved')
 
 
 class Message:
     text = ''
     kind = EMessageType.unknown
-    user = None  # User
+    session = None  # type: Session
     chat = None
-    platform = EPlatform.unknown
 
-    def __init__(self, text, user, kind, chat):
+    def __init__(self, text, session, kind, chat):
         self.text = text
-        self.user = user
+        self.session = session
         self.kind = kind
         self.chat = chat
 
@@ -40,4 +30,4 @@ class Message:
         raise NotImplementedError()
 
     def __repr__(self):
-        return '<Message {} from {}: {}>'.format(self.kind.name, self.user.__repr__(), self.text)
+        return '<Message {} from {}: {}>'.format(self.kind.name, self.session.__repr__(), self.text)

@@ -1,8 +1,8 @@
 from flask import current_app
 from requests import post
 
-from ..db import User
-from .base import Api, EMessageType, Message, EPlatform
+from .base import Api, EMessageType, Message
+from ..db import Session, EPlatform
 
 
 class VkApi(Api):
@@ -24,7 +24,6 @@ class VkApi(Api):
             vk_id = message['object']['user_id']
             kind = EMessageType.joined
 
-        # Если мы узнали, что пользователь покинул нас...
         elif message['type'] == 'group_leave':
             vk_id = message['object']['user_id']
             kind = EMessageType.leaved
@@ -35,12 +34,12 @@ class VkApi(Api):
             text = message['object']['text']
             kind = EMessageType.command if text.startswith('/') else EMessageType.text
 
-        user, new = User.get_or_create(vk=vk_id)
+        session, new = Session.get_or_create(id=vk_id, platform=EPlatform.vk)
 
         if new:
-            current_app.logger.info('Created new vk user: {}'.format(repr(user)))
+            current_app.logger.info('Created new session: {}'.format(repr(session)))
 
-        message = VkMessage(text, user, kind, vk_id)
+        message = VkMessage(text, session, kind, vk_id)
         message.api = self
 
         return message
@@ -62,7 +61,6 @@ class VkApi(Api):
 
 
 class VkMessage(Message):
-    platform = EPlatform.vk
     api = None
 
     def reply(self, message: str):

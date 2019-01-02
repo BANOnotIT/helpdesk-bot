@@ -1,6 +1,6 @@
-from enum import Enum, unique
+from enum import IntEnum
 
-from peewee import Model, IntegerField, PostgresqlDatabase, TextField, CompositeKey
+from peewee import Model, IntegerField, PostgresqlDatabase, TextField, CompositeKey, CharField
 from urllib3.util import parse_url
 
 from config import *
@@ -22,44 +22,35 @@ def get_database():
 
 database = get_database()
 
-
-@unique
-class EUserState(Enum):
-    initial = 0
-    authorizing = 1
-    base = 2
-    integrating_tg = 3
-    integrating_vk = 4
-    trading = 5
-
-    @classmethod
-    def as_choices(cls):
-        return [(item[1].value, item[0]) for item in cls.__members__.items()]
+EPlatform = IntEnum('EPlatform', 'tg vk')
 
 
-class User(Model):
-    tg = IntegerField(default=0, help_text='Telegram User Id')
-    vk = IntegerField(default=0, help_text='VK User Id')
-    state = IntegerField(default=EUserState.initial.value, choices=EUserState.as_choices(),
-                         help_text='Current bot state for user')
+def get_choices_from_enum(enum):
+    return [(item[1].value, item[0]) for item in enum.__members__.items()]
+
+
+class Session(Model):
+    platform = IntegerField(default=0, choices=get_choices_from_enum(EPlatform), help_text='Platform ID')
+    id = CharField(help_text='Platform ID')
+    state = IntegerField(default=0, help_text='Current bot state for user')
     state_param = TextField(default='', help_text='Param for state')
+    text = TextField(default='')
 
-    def set_state(self, state: EUserState, param=''):
+    def set_state(self, state: IntEnum, param=''):
         self.state = state.value
         self.state_param = param
 
     def __repr__(self):
-        return '<User tg={} vk={} state={}:{}>'.format(self.tg, self.vk, EUserState(self.state).name,
-                                                       self.state_param)
+        return '<Session {}{} s{}|{} >'.format(EPlatform(self.platform).name, self.id, self.state, self.state_param)
 
     class Meta:
         database = database
-        table_name = 'app_users'
+        table_name = 'bot_session'
         primary_key = CompositeKey('tg', 'vk')
 
 
 def create_tables():
     with database:
-        database.create_tables([User])
+        database.create_tables([Session])
     # закрываем подключение, чтобы не могли слушать ничего страшного.
     database.close()

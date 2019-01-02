@@ -22,7 +22,8 @@ def before_request():
 
 @flask_app.teardown_appcontext
 def teardown_appcontext(*args):
-    database.close()
+    # database.close()
+    pass
 
 
 # Логируем все что у нас есть в gunicorn, чтобы было видно в консоли
