@@ -46,7 +46,7 @@ class Session(Model):
     class Meta:
         database = database
         table_name = 'bot_session'
-        primary_key = CompositeKey('tg', 'vk')
+        primary_key = CompositeKey('id', 'platform')
 
 
 def create_tables():
