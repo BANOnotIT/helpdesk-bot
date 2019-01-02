@@ -5,6 +5,7 @@ from os import getcwd, path
 
 from modules.msg_parser import get_messages
 from modules.state_machine import State, Machine
+from modules.text_utils import is_yes
 from .api import Message, EMessageType
 
 EState = IntEnum('EState', 'initial base meta team')
@@ -43,12 +44,28 @@ class BaseState(State):
 
 
 class MetaState(State):
-    def entered(self, msg):
+    def entered(self, msg: Message):
         msg.session.set_state(EState.meta)
         msg.session.save()
 
-    def next_state(self, msg):
+        msg.reply(MESSAGES.get('meta_send'))
+
+    def next_state(self, msg: Message):
+        try:
+            confirmed = is_yes(msg.text)
+            if confirmed:
+                return BaseState()
+        except ValueError:
+            pass
+
         return None
+
+    def leaving(self, msg: Message):
+        msg.reply(MESSAGES.get('meta_sending'))
+        msg.reply(msg.session.text.strip)
+
+    def stay(self, msg: Message):
+        msg.reply(MESSAGES.get('confirm'))
 
 
 class BotStateMachine(Machine):

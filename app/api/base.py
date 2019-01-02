@@ -15,7 +15,7 @@ EMessageType = IntEnum('EMessageType', 'unknown text command joined leaved')
 
 
 class Message:
-    text = ''
+    text = ''  # type: str
     kind = EMessageType.unknown
     session = None  # type: Session
     chat = None
