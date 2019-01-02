@@ -8,22 +8,22 @@ from .utils import get_random_phrase
 
 
 class InitialState(State):
-    def transition_rule(self, msg):
+    def next_state(self, msg):
         return AuthorizingState()
 
 
 class AuthorizingState(State):
-    def transition_rule(self, msg: Message):
+    def next_state(self, msg: Message):
         if 'heizenberg' in msg.text.lower() or msg.kind is MsgType.command and msg.text == '/cancel':
             return BaseState()
 
         return None
 
-    def leave(self, msg: Message):
+    def leaving(self, msg: Message):
         # Отвечаем пользователю
         msg.reply('You\'re goddamn right! Now let\'s work!')
 
-    def enter(self, msg: Message):
+    def entered(self, msg: Message):
         # Переводим нашего пользователя в статус авторизации
         msg.user.set_state(EUserState.authorizing)
         msg.user.save()
@@ -37,7 +37,7 @@ class AuthorizingState(State):
 
 
 class BaseState(State):
-    def transition_rule(self, msg: Message):
+    def next_state(self, msg: Message):
         command = msg.kind is MsgType.command
 
         if command and msg.text == '/bind':
@@ -45,7 +45,7 @@ class BaseState(State):
 
         return None
 
-    def enter(self, msg: Message):
+    def entered(self, msg: Message):
         user = msg.user
         user.set_state(EUserState.base)
         user.save()
@@ -63,7 +63,7 @@ class BaseState(State):
         phrase = msg.text[4:].strip()
 
         # Берём нашего пользователя
-        n_user = User.get_or_none(User.state_param == phrase)
+        n_user = Session.get_or_none(Session.state_param == phrase)
 
         current_app.logger.info('Trying phrase "{}"'.format(phrase))
 
@@ -103,17 +103,17 @@ binding_msg = (
 
 
 class BindVKState(State):
-    def transition_rule(self, msg: Message):
+    def next_state(self, msg: Message):
         if MsgType.command and msg.text == '/cancel':
             return BaseState()
 
         return None
 
-    def leave(self, msg: Message):
+    def leaving(self, msg: Message):
         # Отвечаем пользователю
         msg.reply('Ok. I\'ll say to my boys that it\'s unnecessary')
 
-    def enter(self, msg: Message):
+    def entered(self, msg: Message):
         # Выбираем случайные 4 слова откуда-либо, главное случайные
         phrase = get_random_phrase().lower()
 
@@ -131,7 +131,7 @@ class BindVKState(State):
 
 class BindTGState(BindVKState):
     # В чём же прелесть ООП? В том, что не нужно копировать один и тот же код 1000 раз.
-    def enter(self, msg: Message):
+    def entered(self, msg: Message):
         # Выбираем случайные 4 слова откуда-либо, главное случайные
         phrase = get_random_phrase().lower()
 

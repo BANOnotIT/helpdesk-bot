@@ -1,5 +1,5 @@
 class State:
-    def transition_rule(self, msg):
+    def next_state(self, msg):
         """
         Тут мы должны обязательно сказать, когда мы переходим к другому состоянию и отдать его.
         Ну или остаёмся на месте. Тогда выдаём `None`.
@@ -8,7 +8,7 @@ class State:
         """
         raise NotImplementedError()
 
-    def enter(self, msg):
+    def entered(self, msg):
         """
         Вызывается, когда мы приходим к этому состоянию, мы можем что-то сделать.
         Например сохранить это состояние или сказать пользователю,
@@ -18,7 +18,7 @@ class State:
         """
         pass
 
-    def leave(self, msg):
+    def leaving(self, msg):
         """
         Вызывается, когда мы покидаем какое-то состояние.
         Тут можно сказать прощальные слова или прибраться за какой-то сложной операцией.
@@ -55,12 +55,12 @@ class Machine:
         # Берём текущее состояние
         init_state = self.get_initial_state(msg)
         # Спрашиваем, надо ли двигаться куда-то в сторону
-        next_state = init_state.transition_rule(msg)
+        next_state = init_state.next_state(msg)
 
         # Если переходим, то сначала уходим с предыдущего, а потом приходим к новому
         if next_state:
-            init_state.leave(msg)
-            next_state.enter(msg)
+            init_state.leaving(msg)
+            next_state.entered(msg)
 
         # Перехода не случилось, значит возможно в текущем состоянии есть что сделать.
         else:
