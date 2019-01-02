@@ -2,8 +2,8 @@
 
 from enum import IntEnum
 
+from modules.state_machine import State, Machine
 from .api import Message
-from .state_machine import State, Machine
 
 EState = IntEnum('EState', 'initial base text meta command tags')
 

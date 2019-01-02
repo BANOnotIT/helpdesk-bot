@@ -3,8 +3,8 @@ from enum import IntEnum
 from peewee import Model, IntegerField, PostgresqlDatabase, TextField, CompositeKey, CharField
 from urllib3.util import parse_url
 
-from app.utils import choices_from_enum
 from config import *
+from modules.utils import choices_from_enum
 
 
 def get_database():
