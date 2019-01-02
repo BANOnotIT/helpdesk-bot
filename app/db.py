@@ -27,9 +27,9 @@ EPlatform = IntEnum('EPlatform', 'tg vk')
 
 
 class Session(Model):
-    platform = IntegerField(default=0, choices=choices_from_enum(EPlatform), help_text='Platform ID')
+    platform = IntegerField(default=1, choices=choices_from_enum(EPlatform), help_text='Platform ID')
     id = CharField(help_text='Platform ID')
-    state = IntegerField(default=0, help_text='Current bot state for user')
+    state = IntegerField(default=1, help_text='Current bot state for user')
     state_param = TextField(default='', help_text='Param for state')
     text = TextField(default='')
 
